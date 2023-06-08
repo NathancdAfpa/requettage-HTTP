@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <select id="userSelect"></select>
+
+    <div id="userInfo"></div>
+
+    <table id="todosTable">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        fetch('https://jsonplaceholder.typicode.com/users')
+            .then(response => response.json())
+            .then(users => {
+                const select = document.getElementById('userSelect');
+                const userInfoDiv = document.getElementById('userInfo');
+                const todosTableBody = document.querySelector('#todosTable tbody');
+
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.text = user.id + ' - ' + user.name + ' - ' + user.username;
+                    select.appendChild(option);
+                });
+
+                select.addEventListener('change', () => {
+                    const selectedUserId = select.value;
+                    const selectedUser = users.find(user => user.id == selectedUserId);
+
+                    if (selectedUser) {
+                        userInfoDiv.innerHTML = `
+                            <h2>User Information:</h2>
+                            <p><strong>ID:</strong> ${selectedUser.id}</p>
+                            <p><strong>Name:</strong> ${selectedUser.name}</p>
+                            <p><strong>Username:</strong> ${selectedUser.username}</p>
+                            <p><strong>Email:</strong> ${selectedUser.email}</p>
+                            <p><strong>Phone:</strong> ${selectedUser.phone}</p>
+                            <p><strong>Website:</strong> ${selectedUser.website}</p>
+                        `;
+
+                        fetch(`https://jsonplaceholder.typicode.com/todos?userId=${selectedUserId}`)
+                            .then(response => response.json())
+                            .then(todos => {
+                                todosTableBody.innerHTML = '';
+
+                                todos.forEach(todo => {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `
+                                        <td>${todo.id}</td>
+                                        <td>${todo.title}</td>
+                                        <td>${todo.completed}</td>
+                                    `;
+                                    todosTableBody.appendChild(row);
+                                });
+                            })
+                            .catch(error => console.log(error));
+                    } else {
+                        userInfoDiv.innerHTML = '';
+                        todosTableBody.innerHTML = '';
+                    }
+                });
+            })
+            .catch(error => console.log(error));
+    </script>
+</body>
+</html>
